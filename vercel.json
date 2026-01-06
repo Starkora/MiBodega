@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "astro",
+  "regions": ["iad1"],
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "WHATSAPP_NUMERO": "@whatsapp_numero",
+    "WHATSAPP_BOT_URL": "@whatsapp_bot_url"
+  }
+}

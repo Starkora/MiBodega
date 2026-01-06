@@ -1,0 +1,15 @@
+# Ignorar dependencias
+node_modules/
+
+# Ignorar archivos de autenticación de WhatsApp
+auth_info_baileys/
+
+# Ignorar archivos compilados
+dist/
+
+# Ignorar logs
+*.log
+
+# Ignorar archivos de sistema
+.DS_Store
+Thumbs.db

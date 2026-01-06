@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+    <!-- Estructura de la tienda -->
+    <path d="M8 24 L32 12 L56 24 L56 56 L8 56 Z" fill="#2196F3" stroke="#1976D2" stroke-width="2"/>
+    
+    <!-- Techo -->
+    <path d="M4 24 L32 10 L60 24 L56 28 L32 16 L8 28 Z" fill="#1976D2"/>
+    
+    <!-- Puerta -->
+    <rect x="26" y="38" width="12" height="18" fill="#FFF" stroke="#1976D2" stroke-width="1.5"/>
+    
+    <!-- Ventana izquierda -->
+    <rect x="14" y="32" width="8" height="8" fill="#FFF" stroke="#1976D2" stroke-width="1.5"/>
+    
+    <!-- Ventana derecha -->
+    <rect x="42" y="32" width="8" height="8" fill="#FFF" stroke="#1976D2" stroke-width="1.5"/>
+    
+    <!-- Letrero MB -->
+    <rect x="22" y="18" width="20" height="8" fill="#FFF" stroke="#1976D2" stroke-width="1.5" rx="2"/>
+    <text x="32" y="24" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="#1976D2" text-anchor="middle">MB</text>
+    
+    <style>
+        @media (prefers-color-scheme: dark) {
+            path:first-child { fill: #1E88E5; stroke: #1565C0; }
+            path:nth-child(2) { fill: #1565C0; }
+            rect { stroke: #0D47A1; }
+            rect:last-of-type { fill: #E3F2FD; stroke: #0D47A1; }
+            text { fill: #0D47A1; }
+        }
+    </style>
+</svg>

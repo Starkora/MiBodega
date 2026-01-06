@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Categorías
+model Categoria {
+  id          Int         @id @default(autoincrement())
+  nombre      String      @db.VarChar(100)
+  descripcion String?     @db.Text
+  productos   Producto[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("categorias")
+}
+
+// Modelo de Productos
+model Producto {
+  id              Int                 @id @default(autoincrement())
+  codigo          String              @unique @db.VarChar(50)
+  nombre          String              @db.VarChar(200)
+  descripcion     String?             @db.Text
+  precio          Decimal             @db.Decimal(10, 2)
+  precioCompra    Decimal             @db.Decimal(10, 2)
+  stock           Int                 @default(0)
+  stockMinimo     Int                 @default(5)
+  unidad          String              @default("unidad") @db.VarChar(50) // unidad, kg, litro, etc.
+  categoriaId     Int?
+  categoria       Categoria?          @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  imagen          String?             @db.VarChar(255)
+  activo          Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  ventasDetalles  VentaDetalle[]
+  pedidosDetalles PedidoDetalle[]
+  movimientos     MovimientoInventario[]
+
+  @@index([categoriaId])
+  @@map("productos")
+}
+
+// Modelo de Pedidos Pendientes
+model Pedido {
+  id              Int             @id @default(autoincrement())
+  numeroPedido    String          @unique @db.VarChar(50)
+  token           String          @unique @db.VarChar(100)
+  estado          String          @default("pendiente") @db.VarChar(50) // pendiente, confirmado, cancelado
+  total           Decimal         @db.Decimal(10, 2)
+  clienteNombre   String?         @db.VarChar(200)
+  clienteTelefono String?         @db.VarChar(20)
+  notas           String?         @db.Text
+  detalles        PedidoDetalle[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([estado])
+  @@index([token])
+  @@map("pedidos")
+}
+
+// Modelo de Detalles de Pedido
+model PedidoDetalle {
+  id          Int       @id @default(autoincrement())
+  pedidoId    Int
+  pedido      Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  productoId  Int
+  producto    Producto  @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  cantidad    Int
+  precioUnitario Decimal @db.Decimal(10, 2)
+  subtotal    Decimal   @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+
+  @@index([pedidoId])
+  @@index([productoId])
+  @@map("pedidos_detalles")
+}
+
+// Modelo de Ventas
+model Venta {
+  id              Int             @id @default(autoincrement())
+  numeroVenta     String          @unique @db.VarChar(50)
+  fecha           DateTime        @default(now())
+  total           Decimal         @db.Decimal(10, 2)
+  descuento       Decimal         @default(0) @db.Decimal(10, 2)
+  subtotal        Decimal         @db.Decimal(10, 2)
+  metodoPago      String          @db.VarChar(50) // efectivo, tarjeta, transferencia, etc.
+  clienteNombre   String?         @db.VarChar(200)
+  clienteTelefono String?         @db.VarChar(20)
+  notas           String?         @db.Text
+  detalles        VentaDetalle[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("ventas")
+}
+
+// Modelo de Detalles de Venta
+model VentaDetalle {
+  id          Int       @id @default(autoincrement())
+  ventaId     Int
+  venta       Venta     @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  productoId  Int
+  producto    Producto  @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  cantidad    Int
+  precioUnitario Decimal @db.Decimal(10, 2)
+  subtotal    Decimal   @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+
+  @@index([ventaId])
+  @@index([productoId])
+  @@map("ventas_detalles")
+}
+
+// Modelo de Movimientos de Inventario
+model MovimientoInventario {
+  id          Int       @id @default(autoincrement())
+  productoId  Int
+  producto    Producto  @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  tipo        String    @db.VarChar(50) // entrada, salida, ajuste
+  cantidad    Int
+  stockAnterior Int
+  stockNuevo  Int
+  motivo      String    @db.VarChar(200)
+  notas       String?   @db.Text
+  fecha       DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([productoId])
+  @@index([fecha])
+  @@map("movimientos_inventario")
+}
+
+// Modelo de Configuración del Sistema
+model Configuracion {
+  id          Int       @id @default(autoincrement())
+  clave       String    @unique @db.VarChar(100)
+  valor       String    @db.Text
+  descripcion String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("configuracion")
+}
+
