@@ -3,15 +3,18 @@ import makeWASocket, {
   useMultiFileAuthState,
   delay
 } from '@whiskeysockets/baileys';
-import qrcode from 'qrcode-terminal';
+import QRCode from 'qrcode';
 import express from 'express';
 import pino from 'pino';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 app.use(express.json());
 
 let sock: any = null;
 let isConnected = false;
+let currentQR: string | null = null; // Guardar el QR actual
 
 const logger = pino({ level: 'silent' }); // Silenciar logs de Baileys
 
@@ -32,9 +35,31 @@ async function connectToWhatsApp() {
     console.log('📡 Connection update:', { connection, hasQR: !!qr });
     
     if (qr) {
-      console.log('\n📱 Escanea este código QR con WhatsApp:\n');
-      qrcode.generate(qr, { small: true });
-      console.log('\n👆 Abre WhatsApp > Dispositivos vinculados > Vincular dispositivo\n');
+      currentQR = qr;
+      
+      // Generar QR como imagen PNG
+      const qrDir = path.join(process.cwd(), 'qr-codes');
+      if (!fs.existsSync(qrDir)) {
+        fs.mkdirSync(qrDir, { recursive: true });
+      }
+      
+      const qrPath = path.join(qrDir, 'whatsapp-qr.png');
+      await QRCode.toFile(qrPath, qr, {
+        width: 400,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      
+      console.log('\n📱 CÓDIGO QR GENERADO');
+      console.log('================================');
+      console.log(`🖼️  QR guardado en: ${qrPath}`);
+      console.log(`🌐 Accede al QR en: http://localhost:${process.env.BOT_PORT || 3001}/qr`);
+      console.log('================================');
+      console.log('👆 Abre la URL en tu navegador y escanea con WhatsApp');
+      console.log('📱 WhatsApp > Dispositivos vinculados > Vincular dispositivo\n');
     }
     
     if (connection === 'close') {
@@ -57,6 +82,7 @@ async function connectToWhatsApp() {
       console.log('✅ Bot WhatsApp conectado correctamente');
       console.log('📞 Número:', sock?.user?.id);
       isConnected = true;
+      currentQR = null; // Limpiar el QR al conectar
     }
   });
 
@@ -77,6 +103,114 @@ app.get('/health', (req, res) => {
     connected: isConnected,
     timestamp: new Date().toISOString()
   });
+});
+
+// Endpoint para ver el QR en el navegador
+app.get('/qr', async (req, res) => {
+  const qrPath = path.join(process.cwd(), 'qr-codes', 'whatsapp-qr.png');
+  
+  if (!fs.existsSync(qrPath)) {
+    return res.status(404).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>QR WhatsApp - MiBodega</title>
+          <style>
+            body { font-family: Arial; text-align: center; padding: 50px; background: #f5f5f5; }
+            .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+            h1 { color: #25D366; }
+            .status { padding: 20px; background: #fffbdd; border-radius: 5px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>🤖 Bot WhatsApp - MiBodega</h1>
+            <div class="status">
+              ${isConnected ? 
+                '<h2>✅ Bot Conectado</h2><p>El bot ya está vinculado a WhatsApp</p>' :
+                '<h2>⏳ Esperando QR...</h2><p>El código QR aún no se ha generado. Espera unos segundos y recarga la página.</p>'
+              }
+            </div>
+            <button onclick="location.reload()">🔄 Recargar</button>
+          </div>
+        </body>
+      </html>
+    `);
+  }
+  
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>QR WhatsApp - MiBodega</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          body { font-family: Arial; text-align: center; padding: 20px; background: #f5f5f5; }
+          .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+          h1 { color: #25D366; margin-bottom: 20px; }
+          .qr-image { max-width: 100%; height: auto; border: 2px solid #25D366; border-radius: 10px; padding: 20px; background: white; }
+          .instructions { text-align: left; padding: 20px; background: #e3f2fd; border-radius: 5px; margin: 20px 0; }
+          .instructions ol { margin: 10px 0; padding-left: 20px; }
+          .instructions li { margin: 8px 0; }
+          button { padding: 12px 24px; background: #25D366; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; }
+          button:hover { background: #128C7E; }
+          .warning { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>📱 Escanea el QR con WhatsApp</h1>
+          
+          <img class="qr-image" src="/qr-image" alt="QR Code WhatsApp">
+          
+          <div class="instructions">
+            <h3>📋 Instrucciones:</h3>
+            <ol>
+              <li>Abre <strong>WhatsApp</strong> en tu teléfono</li>
+              <li>Ve a <strong>Configuración</strong> (⚙️)</li>
+              <li>Toca <strong>Dispositivos vinculados</strong></li>
+              <li>Toca <strong>Vincular un dispositivo</strong></li>
+              <li>Escanea este código QR con la cámara</li>
+            </ol>
+          </div>
+          
+          <div class="warning">
+            ⏰ Este QR expira en unos minutos. Si no funciona, recarga la página para generar uno nuevo.
+          </div>
+          
+          <button onclick="location.reload()">🔄 Actualizar QR</button>
+          <button onclick="window.location.href='/api/whatsapp/status'">📊 Ver Estado</button>
+        </div>
+        
+        <script>
+          // Auto-reload cada 60 segundos si no está conectado
+          setTimeout(() => {
+            fetch('/api/whatsapp/status')
+              .then(r => r.json())
+              .then(data => {
+                if (data.connected) {
+                  alert('✅ Bot conectado correctamente!');
+                  location.reload();
+                } else {
+                  location.reload();
+                }
+              });
+          }, 60000);
+        </script>
+      </body>
+    </html>
+  `);
+});
+
+// Endpoint para servir la imagen del QR
+app.get('/qr-image', (req, res) => {
+  const qrPath = path.join(process.cwd(), 'qr-codes', 'whatsapp-qr.png');
+  
+  if (!fs.existsSync(qrPath)) {
+    return res.status(404).send('QR no disponible');
+  }
+  
+  res.sendFile(qrPath);
 });
 
 // API para enviar mensajes de texto

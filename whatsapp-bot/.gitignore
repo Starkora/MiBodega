@@ -4,6 +4,9 @@ node_modules/
 # Ignorar archivos de autenticación de WhatsApp
 auth_info_baileys/
 
+# Ignorar códigos QR generados
+qr-codes/
+
 # Ignorar archivos compilados
 dist/
 
