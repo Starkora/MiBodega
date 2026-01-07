@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import AuthGuard from './AuthGuard';
 
 interface Stats {
   resumen: {
@@ -282,3 +283,6 @@ export default function Dashboard() {
     </>
   );
 }
+
+// Exportar con AuthGuard
+export default function Dashboard() {

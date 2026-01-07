@@ -1,8 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import VentasList from '../components/VentasList';
+import AuthGuard from '../components/AuthGuard';
 ---
 
 <Layout title="Ventas">
-	<VentasList client:load />
+	<AuthGuard client:only="react">
+		<VentasList client:load />
+	</AuthGuard>
 </Layout>

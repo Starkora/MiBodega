@@ -89,12 +89,12 @@ import '../styles/global.css';
 								<span>Configuración</span>
 							</a>
 						</li>
-					</ul>
-				</nav>
-			</aside>
-
-			<!-- Main Content -->
-			<main class="main-content">
+					<li class="nav-item">
+						<a href="#" class="nav-link text-danger" id="logout-btn">
+							<i class="bi bi-box-arrow-left"></i>
+							<span>Cerrar Sesión</span>
+						</a>
+					</li>
 				<slot />
 			</main>
 		</div>
@@ -142,7 +142,18 @@ import '../styles/global.css';
 						});
 					});
 				}
-			});
+				// Cerrar sesión
+				const logoutBtn = document.getElementById('logout-btn');
+				if (logoutBtn) {
+					logoutBtn.addEventListener('click', async (e) => {
+						e.preventDefault();
+						
+						if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+							localStorage.removeItem('auth_token');
+							window.location.href = '/login';
+						}
+					});
+				}			});
 		</script>
 	</body>
 </html>
