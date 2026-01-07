@@ -50,6 +50,13 @@ export default function ProductosList() {
   const [productoAEliminar, setProductoAEliminar] = useState<number | null>(null);
 
   useEffect(() => {
+    // Verificar autenticación
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+    
     fetchProductos();
     fetchCategorias();
   }, []);

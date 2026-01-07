@@ -1,11 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ConfiguracionForm from '../components/ConfiguracionForm';
-import AuthGuard from '../components/AuthGuard';
 ---
 
 <Layout title="Configuración">
-	<AuthGuard client:only="react">
-		<ConfiguracionForm client:load />
-	</AuthGuard>
+	<ConfiguracionForm client:load />
 </Layout>

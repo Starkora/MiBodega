@@ -1,11 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import InventarioList from '../components/InventarioList';
-import AuthGuard from '../components/AuthGuard';
 ---
 
 <Layout title="Inventario">
-	<AuthGuard client:only="react">
-		<InventarioList client:load />
-	</AuthGuard>
+	<InventarioList client:load />
 </Layout>

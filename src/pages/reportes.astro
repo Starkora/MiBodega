@@ -1,11 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ReportesList from '../components/ReportesList';
-import AuthGuard from '../components/AuthGuard';
 ---
 
 <Layout title="Reportes">
-	<AuthGuard client:only="react">
-		<ReportesList client:load />
-	</AuthGuard>
+	<ReportesList client:load />
 </Layout>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import AuthGuard from './AuthGuard';
 
 interface Stats {
   resumen: {
@@ -20,6 +19,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Verificar autenticación
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+    
     fetchStats();
   }, []);
 
