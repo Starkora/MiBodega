@@ -283,6 +283,3 @@ export default function Dashboard() {
     </>
   );
 }
-
-// Exportar con AuthGuard
-export default function Dashboard() {
