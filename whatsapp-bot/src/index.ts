@@ -304,6 +304,60 @@ app.get('/api/whatsapp/status', (req, res) => {
   });
 });
 
+// 🔔 API para enviar notificaciones desde Kairos
+app.post('/api/notifications', async (req, res) => {
+  try {
+    if (!isConnected) {
+      return res.status(503).json({ 
+        error: 'Bot no conectado', 
+        mensaje: 'El bot de WhatsApp no está conectado actualmente' 
+      });
+    }
+
+    const { numero, mensaje, apiKey } = req.body;
+
+    // Validar API Key para seguridad
+    const expectedApiKey = process.env.API_KEY || 'kairos-mibodega-2024';
+    if (apiKey !== expectedApiKey) {
+      return res.status(401).json({ error: 'API Key inválida' });
+    }
+
+    if (!numero || !mensaje) {
+      return res.status(400).json({ error: 'Número y mensaje son requeridos' });
+    }
+
+    // Formatear número (eliminar caracteres no numéricos)
+    const numeroLimpio = numero.replace(/\D/g, '');
+    
+    // Si el número no tiene código de país, asumir Perú (+51)
+    let numeroFormateado = numeroLimpio;
+    if (!numeroLimpio.startsWith('51') && numeroLimpio.length <= 9) {
+      numeroFormateado = '51' + numeroLimpio;
+    }
+
+    const jid = `${numeroFormateado}@s.whatsapp.net`;
+    
+    console.log(`🔔 Enviando notificación de Kairos a ${jid}`);
+    console.log(`📝 Mensaje: ${mensaje}`);
+    
+    await sock.sendMessage(jid, { text: mensaje });
+    
+    console.log('✅ Notificación enviada exitosamente');
+    
+    res.json({ 
+      success: true, 
+      mensaje: 'Notificación enviada correctamente',
+      destinatario: numeroFormateado
+    });
+  } catch (error: any) {
+    console.error('❌ Error al enviar notificación:', error);
+    res.status(500).json({ 
+      error: 'Error al enviar notificación', 
+      details: error.message 
+    });
+  }
+});
+
 const PORT = process.env.BOT_PORT || 3001;
 
 app.listen(PORT, () => {
