@@ -100,21 +100,61 @@ export const PUT: APIRoute = async ({ params, request }) => {
   }
 };
 
-// DELETE - Eliminar producto
+// DELETE - Eliminar producto (desactivar si tiene relaciones)
 export const DELETE: APIRoute = async ({ params }) => {
   try {
     const id = parseInt(params.id!);
 
-    await prisma.producto.delete({
+    // Verificar si el producto tiene relaciones
+    const producto = await prisma.producto.findUnique({
       where: { id },
+      include: {
+        ventasDetalles: { take: 1 },
+        pedidosDetalles: { take: 1 },
+        movimientos: { take: 1 }
+      }
     });
 
-    return new Response(JSON.stringify({ message: 'Producto eliminado' }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    if (!producto) {
+      return new Response(JSON.stringify({ error: 'Producto no encontrado' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const tieneRelaciones = 
+      producto.ventasDetalles.length > 0 || 
+      producto.pedidosDetalles.length > 0 ||
+      producto.movimientos.length > 0;
+
+    if (tieneRelaciones) {
+      // Si tiene relaciones, solo desactivar
+      await prisma.producto.update({
+        where: { id },
+        data: { activo: false }
+      });
+
+      return new Response(JSON.stringify({ 
+        message: 'Producto desactivado (tiene historial de ventas/pedidos)',
+        desactivado: true 
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } else {
+      // Si no tiene relaciones, eliminar permanentemente
+      await prisma.producto.delete({
+        where: { id }
+      });
+
+      return new Response(JSON.stringify({ 
+        message: 'Producto eliminado permanentemente',
+        eliminado: true 
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   } catch (error) {
     console.error('Error al eliminar producto:', error);
     return new Response(JSON.stringify({ error: 'Error al eliminar producto' }), {
