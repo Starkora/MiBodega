@@ -935,7 +935,7 @@ export default function PantallaCliente() {
       <style>{`
         .cliente-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: #f7fafc;
           padding-bottom: 2rem;
         }
 
@@ -945,8 +945,8 @@ export default function PantallaCliente() {
           align-items: center;
           justify-content: center;
           min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
+          background: #f7fafc;
+          color: #2d3748;
         }
 
         .cliente-header {

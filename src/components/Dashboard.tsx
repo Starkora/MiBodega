@@ -17,6 +17,7 @@ interface Stats {
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Verificar autenticación
@@ -26,6 +27,7 @@ export default function Dashboard() {
       return;
     }
     
+    setIsAuthenticated(true);
     fetchStats();
   }, []);
 
@@ -64,6 +66,10 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   if (loading) {
     return (

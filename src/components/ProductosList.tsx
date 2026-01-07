@@ -48,6 +48,7 @@ export default function ProductosList() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [productoAEliminar, setProductoAEliminar] = useState<number | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Verificar autenticación
@@ -57,6 +58,7 @@ export default function ProductosList() {
       return;
     }
     
+    setIsAuthenticated(true);
     fetchProductos();
     fetchCategorias();
   }, []);
@@ -251,6 +253,10 @@ export default function ProductosList() {
       p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       p.codigo.toLowerCase().includes(busqueda.toLowerCase())
   );
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   if (loading) {
     return (
