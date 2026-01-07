@@ -19,6 +19,8 @@ export default function CategoriasList() {
     descripcion: '',
   });
   const [toast, setToast] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [categoriaAEliminar, setCategoriaAEliminar] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCategorias();
@@ -45,8 +47,11 @@ export default function CategoriasList() {
     e.preventDefault();
 
     try {
-      const response = await fetch('/api/categorias', {
-        method: 'POST',
+      const url = editando ? `/api/categorias/${categoriaActual.id}` : '/api/categorias';
+      const method = editando ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -56,12 +61,52 @@ export default function CategoriasList() {
       if (response.ok) {
         fetchCategorias();
         handleCloseModal();
-        showToast('success', 'Categoría creada');
+        showToast('success', editando ? 'Categoría actualizada' : 'Categoría creada');
       }
     } catch (error) {
       console.error('Error al guardar categoría:', error);
       showToast('error', 'Error al guardar categoría');
     }
+  };
+
+  const handleEdit = (categoria: Categoria) => {
+    setEditando(true);
+    setCategoriaActual(categoria);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    setCategoriaAEliminar(id);
+    setShowConfirmModal(true);
+  };
+
+  const confirmarEliminacion = async () => {
+    if (!categoriaAEliminar) return;
+
+    try {
+      const response = await fetch(`/api/categorias/${categoriaAEliminar}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchCategorias();
+        showToast('success', 'Categoría eliminada');
+      } else {
+        const data = await response.json();
+        showToast('error', data.error || 'Error al eliminar categoría');
+      }
+    } catch (error) {
+      console.error('Error al eliminar categoría:', error);
+      showToast('error', 'Error al eliminar categoría');
+    } finally {
+      setShowConfirmModal(false);
+      setCategoriaAEliminar(null);
+    }
+  };
+
+  const cancelarEliminacion = () => {
+    setShowConfirmModal(false);
+    setCategoriaAEliminar(null);
   };
 
   const handleCloseModal = () => {
@@ -127,6 +172,22 @@ export default function CategoriasList() {
                   <span className="badge bg-secondary">
                     {categoria._count?.productos || 0} productos
                   </span>
+                  <div>
+                    <button
+                      className="btn btn-sm btn-outline-primary me-2"
+                      onClick={() => handleEdit(categoria)}
+                      title="Editar"
+                    >
+                      <i className="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDelete(categoria.id)}
+                      title="Eliminar"
+                    >
+                      <i className="bi bi-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -140,7 +201,9 @@ export default function CategoriasList() {
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Nueva Categoría</h5>
+                <h5 className="modal-title">
+                  {editando ? 'Editar Categoría' : 'Nueva Categoría'}
+                </h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -188,7 +251,7 @@ export default function CategoriasList() {
                     Cancelar
                   </button>
                   <button type="submit" className="btn btn-primary">
-                    Crear Categoría
+                    {editando ? 'Actualizar' : 'Crear'} Categoría
                   </button>
                 </div>
               </form>
@@ -196,7 +259,68 @@ export default function CategoriasList() {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación de eliminación */}
+      {showConfirmModal && (
+        <div className="modal show d-block" tabIndex={-1}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirmar Eliminación</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={cancelarEliminacion}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p>¿Estás seguro de que deseas eliminar esta categoría?</p>
+                <p className="text-danger">
+                  <i className="bi bi-exclamation-triangle me-2"></i>
+                  Si la categoría tiene productos asociados, no podrá ser eliminada.
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={cancelarEliminacion}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={confirmarEliminacion}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showModal && <div className="modal-backdrop show"></div>}
+      {showConfirmModal && <div className="modal-backdrop show"></div>}
+
+      {/* Toast de notificación */}
+      {toast && (
+        <div className="position-fixed bottom-0 end-0 p-3" style={{ zIndex: 11 }}>
+          <div className={`toast show align-items-center text-white bg-${toast.type === 'success' ? 'success' : 'danger'} border-0`}>
+            <div className="d-flex">
+              <div className="toast-body">
+                {toast.message}
+              </div>
+              <button
+                type="button"
+                className="btn-close btn-close-white me-2 m-auto"
+                onClick={() => setToast(null)}
+              ></button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
