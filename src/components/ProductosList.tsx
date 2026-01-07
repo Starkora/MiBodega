@@ -148,6 +148,28 @@ export default function ProductosList() {
     setProductoAEliminar(null);
   };
 
+  const handleActivar = async (id: number) => {
+    try {
+      const response = await fetch(`/api/productos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ activo: true }),
+      });
+
+      if (response.ok) {
+        fetchProductos();
+        showToast('success', 'Producto activado');
+      } else {
+        showToast('error', 'Error al activar el producto');
+      }
+    } catch (error) {
+      console.error('Error al activar producto:', error);
+      showToast('error', 'Error al activar el producto');
+    }
+  };
+
   const handleEdit = (producto: Producto) => {
     setEditando(true);
     setProductoActual(producto);
@@ -377,15 +399,27 @@ export default function ProductosList() {
                         <button
                           className="btn btn-sm btn-outline-primary me-2"
                           onClick={() => handleEdit(producto)}
+                          title="Editar"
                         >
                           <i className="bi bi-pencil"></i>
                         </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(producto.id)}
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
+                        {producto.activo ? (
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => handleDelete(producto.id)}
+                            title="Eliminar"
+                          >
+                            <i className="bi bi-trash"></i>
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-sm btn-outline-success"
+                            onClick={() => handleActivar(producto.id)}
+                            title="Activar"
+                          >
+                            <i className="bi bi-arrow-counterclockwise"></i>
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
