@@ -111,9 +111,9 @@ setInterval(async () => {
     const port = process.env.PORT || 3001;
     const response = await fetch(`http://localhost:${port}/health`);
     const data = await response.json() as { status: string; connected: boolean; timestamp: string };
-    console.log('🔄 Keep-alive ping:', data.timestamp);
+    console.log('Keep-alive ping:', data.timestamp);
   } catch (error) {
-    console.log('⚠️ Keep-alive ping failed, but service is still running');
+    console.log('Keep-alive ping failed, but service is still running');
   }
 }, 10 * 60 * 1000); // 10 minutos
 
