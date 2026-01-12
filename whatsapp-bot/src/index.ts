@@ -76,7 +76,7 @@ async function connectToWhatsApp() {
         await delay(5000);
         connectToWhatsApp();
       } else {
-        console.log('🔐 Sesión cerrada. Elimina la carpeta "auth_info_baileys" y reinicia el bot.');
+        console.log(' Sesión cerrada. Elimina la carpeta "auth_info_baileys" y reinicia el bot.');
       }
     } else if (connection === 'open') {
       console.log('✅ Bot WhatsApp conectado correctamente');
@@ -104,6 +104,18 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Auto-ping cada 10 minutos para evitar que Render ponga el servicio en sleep
+setInterval(async () => {
+  try {
+    const port = process.env.PORT || 3001;
+    const response = await fetch(`http://localhost:${port}/health`);
+    const data = await response.json();
+    console.log('🔄 Keep-alive ping:', data.timestamp);
+  } catch (error) {
+    console.log('⚠️ Keep-alive ping failed, but service is still running');
+  }
+}, 10 * 60 * 1000); // 10 minutos
 
 // Endpoint para ver el QR en el navegador
 app.get('/qr', async (req, res) => {
@@ -363,7 +375,7 @@ const PORT = process.env.BOT_PORT || 3001;
 app.listen(PORT, () => {
   console.log('\n🤖 Bot de WhatsApp para MiBodega');
   console.log('================================');
-  console.log(`🚀 API escuchando en http://localhost:${PORT}`);
+  console.log(` API escuchando en http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`📈 Estado: http://localhost:${PORT}/api/whatsapp/status`);
   console.log('================================\n');

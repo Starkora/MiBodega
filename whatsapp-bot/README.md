@@ -11,7 +11,7 @@ Bot automático de WhatsApp usando Baileys para enviar notificaciones de pedidos
 - 🔄 Reconexión automática
 - 📊 API REST para integración
 
-## 🚀 Instalación
+##  Instalación
 
 ### 1. Instalar dependencias
 
@@ -216,7 +216,7 @@ whatsapp-bot/
 
 3. **Revisa los logs del bot** en la terminal
 
-## 🚀 Producción
+##  Producción
 
 Para ejecutar en producción:
 

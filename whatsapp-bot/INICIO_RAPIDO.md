@@ -1,6 +1,6 @@
 # 📱 Bot de WhatsApp - Guía Rápida
 
-## 🚀 Inicio Rápido
+##  Inicio Rápido
 
 ### Opción 1: Usando el script (Recomendado)
 
@@ -136,7 +136,7 @@ npm run dev
 
 O simplemente ejecuta `iniciar-bot.bat` en una segunda terminal.
 
-## 🚀 Producción
+##  Producción
 
 Para mantener el bot corriendo 24/7:
 
